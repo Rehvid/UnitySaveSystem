@@ -399,8 +399,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f632c1a7c54e408cf27c16048272fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth: 345
-  maxHealth: 345
+  currentHealth: 123
+  maxHealth: 123123
 --- !u!1 &975472642
 GameObject:
   m_ObjectHideFlags: 0
@@ -630,8 +630,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f632c1a7c54e408cf27c16048272fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth: 234
-  maxHealth: 234
+  currentHealth: 669.1
+  maxHealth: 888.2
 --- !u!1 &1617148311
 GameObject:
   m_ObjectHideFlags: 0

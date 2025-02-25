@@ -3,20 +3,32 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Backup;
     using Config;
+    using Encryption;
     using NewSystem;
     using PersistenceData;
     using UnityEngine;
+ 
 
-    public class FileDataHandler
+    public class FileDataHandler: IDataHandler
     {
         private Dictionary<SaveCategory, string> saveCategories;
         private SaveableEntity[] saveableEntities;
+        private bool useEncryption;
+        private readonly FileBackup fileBackup; 
         
-        public FileDataHandler(Dictionary<SaveCategory, string> saveCategories, SaveableEntity[] saveableEntities)
+        public FileDataHandler(
+            Dictionary<SaveCategory, string> saveCategories, 
+            SaveableEntity[] saveableEntities,
+            bool useEncryption
+        )
         {
             this.saveCategories = saveCategories;
             this.saveableEntities = saveableEntities;
+            this.useEncryption = useEncryption;
+            
+            fileBackup = new FileBackup();
         }
         
         public void SaveAll()
@@ -71,11 +83,28 @@
         
         private void WriteToFile(string fileName, string serializedData)
         {
+            if (useEncryption)
+            {
+                serializedData = SaveEncryption.Encrypt(serializedData);
+            }
+            
             File.WriteAllText(GetPathToFile(fileName), serializedData);
+
+            if (File.Exists(GetPathToFile(fileName)))
+            {
+                fileBackup.CreateBackup(GetPathToFile(fileName));   
+            }
         }
 
         private string ReadFromFile(string fileName)
         {
+            if (useEncryption)
+            {
+                return SaveEncryption.Decrypt(
+                    File.ReadAllText(GetPathToFile(fileName))
+                );
+            }
+            
             return File.ReadAllText(GetPathToFile(fileName));
         }
 

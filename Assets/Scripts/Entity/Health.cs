@@ -1,6 +1,6 @@
 ﻿namespace RehvidGames.Entity
 {
-    using NewSystem;
+    
     using SaveSystem;
     using UnityEngine;
 
@@ -22,13 +22,14 @@
         public void Load(object state)
         {
             HealthSystemData systemData = JsonUtility.FromJson<HealthSystemData>(state.ToString());
+            
             currentHealth = systemData.CurrentHealth;
             maxHealth = systemData.MaxHealth;
         }
     }
 
     [System.Serializable]
-    public struct HealthSystemData
+    public class HealthSystemData
     {
         public float CurrentHealth;
         public float MaxHealth;
