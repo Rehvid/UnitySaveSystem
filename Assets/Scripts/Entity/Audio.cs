@@ -1,10 +1,9 @@
 ﻿namespace RehvidGames.Entity
 {
-    using NewSystem;
     using SaveSystem;
     using UnityEngine;
 
-    public class Audio: MonoBehaviour, ISaveable
+    public class Audio: MonoBehaviour
     {
         [SerializeField] private float volume;
         

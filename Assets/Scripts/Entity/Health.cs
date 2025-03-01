@@ -1,6 +1,6 @@
 ﻿namespace RehvidGames.Entity
 {
-    
+    using Newtonsoft.Json;
     using SaveSystem;
     using UnityEngine;
 
@@ -8,7 +8,6 @@
     {
         [SerializeField] private float currentHealth = 1;
         [SerializeField] private float maxHealth = 100;
-        
         
         public object Save()
         {
@@ -21,18 +20,19 @@
 
         public void Load(object state)
         {
-            HealthSystemData systemData = JsonUtility.FromJson<HealthSystemData>(state.ToString());
+            var systemData = JsonConvert.DeserializeObject<HealthSystemData>(state.ToString());
             
+            Debug.Log(systemData.CurrentHealth);
             currentHealth = systemData.CurrentHealth;
             maxHealth = systemData.MaxHealth;
         }
     }
-
+    
+    
     [System.Serializable]
-    public class HealthSystemData
+    public struct HealthSystemData
     {
         public float CurrentHealth;
         public float MaxHealth;
     }
-    
 }

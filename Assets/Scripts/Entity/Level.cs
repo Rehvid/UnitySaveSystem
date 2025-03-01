@@ -1,6 +1,5 @@
 ﻿namespace RehvidGames.Entity
 {
-    using NewSystem;
     using SaveSystem;
     using UnityEngine;
 

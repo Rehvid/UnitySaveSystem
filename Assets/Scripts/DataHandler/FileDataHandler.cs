@@ -4,247 +4,47 @@
     using System.IO;
     using System.Linq;
     using Backup;
-    using Config;
-    using Encryption;
-    using NewSystem;
+    using FileSaver;
     using PersistenceData;
+    using Providers;
     using UnityEngine;
- 
+    using SaveSystem;
 
-    public class FileDataHandler: IDataHandler
+    public class FileDataHandler: DataHandler
     {
-        private Dictionary<SaveCategory, string> saveCategories;
-        private SaveableEntity[] saveableEntities;
-        private bool useEncryption;
-        private readonly FileBackup fileBackup; 
+        public FileDataHandler(IHandlerProvider provider) : base(provider) { }
         
-        public FileDataHandler(
-            Dictionary<SaveCategory, string> saveCategories, 
-            SaveableEntity[] saveableEntities,
-            bool useEncryption
-        )
+        protected override void SaveData(string fileName, object data)
         {
-            this.saveCategories = saveCategories;
-            this.saveableEntities = saveableEntities;
-            this.useEncryption = useEncryption;
+            bool saveResult = settings.FileSaver.Save(GetPathToFile(fileName), data, settings.UseEncryption);
             
-            fileBackup = new FileBackup();
-        }
-        
-        public void SaveAll()
-        {
-            Dictionary<string, List<PersistedEntity>> persistedEntityDictionary = new();
-            Dictionary<SaveCategory, Dictionary<string, List<PersistedEntity>>> persistedEntitiesBySaveCategory = new();
-
-            foreach (SaveableEntity entity in saveableEntities)
+            if (saveResult)
             {
-                Collect(entity, persistedEntityDictionary);
-
-                if (!persistedEntitiesBySaveCategory.ContainsKey(entity.Category))
-                {
-                    persistedEntitiesBySaveCategory[entity.Category] = new Dictionary<string, List<PersistedEntity>>();
-                }
-                
-                persistedEntitiesBySaveCategory[entity.Category][entity.Id] = persistedEntityDictionary[entity.Id];
+                settings.Backup.CreateBackup(GetPathToFile(fileName));   
             }
+        }
 
-            WriteToFilesByCategory(persistedEntitiesBySaveCategory);
+        protected override List<PersistedEntityCollection> ReadPersistedCollections(string fileName)
+        {
+            return settings.FileSaver.Load<List<PersistedEntityCollection>>(fileName, settings.UseEncryption);
         }
         
-        private void WriteToFilesByCategory(Dictionary<SaveCategory, Dictionary<string, List<PersistedEntity>>> persistedEntitiesBySaveCategory)
+        protected override void LoadData(string fileName, SaveableEntity[] entities)
         {
-            foreach (var entity in persistedEntitiesBySaveCategory)
-            {
-                if (!saveCategories.TryGetValue(entity.Key, out string fileName)) continue;
-                
-                WriteToFile(fileName, SerializeContent(new PersistedEntityRegistry(entity.Value)));
-            }
-        }
-        
-        private void Collect(SaveableEntity entity, Dictionary<string, List<PersistedEntity>> persistedEntityDictionary)
-        {
-            if (!persistedEntityDictionary.ContainsKey(entity.Id))
-            {
-                persistedEntityDictionary[entity.Id] = new List<PersistedEntity>();
-            }
+            List<PersistedEntityCollection> persistedCollections = ReadPersistedCollections(fileName);
             
-            foreach (var saveableObject in entity.CaptureSaveableObjects())
+            if (persistedCollections == null)
             {
-                persistedEntityDictionary[entity.Id].Add(
-                    CreatePersistedEntity(saveableObject.Value, saveableObject.Key)
-                );
-            }
-        }
-
-        private string SerializeContent(object value)
-        {
-            return JsonUtility.ToJson(value, true);
-        }
-        
-        private void WriteToFile(string fileName, string serializedData)
-        {
-            if (useEncryption)
-            {
-                serializedData = SaveEncryption.Encrypt(serializedData);
-            }
-            
-            File.WriteAllText(GetPathToFile(fileName), serializedData);
-
-            if (File.Exists(GetPathToFile(fileName)))
-            {
-                fileBackup.CreateBackup(GetPathToFile(fileName));   
-            }
-        }
-
-        private string ReadFromFile(string fileName)
-        {
-            if (useEncryption)
-            {
-                return SaveEncryption.Decrypt(
-                    File.ReadAllText(GetPathToFile(fileName))
-                );
-            }
-            
-            return File.ReadAllText(GetPathToFile(fileName));
-        }
-
-        public void OverwriteValueInCategory(SaveCategory category, string id, string type, object value)
-        {
-            if (!saveCategories.TryGetValue(category, out var saveFileName))
-            {
-                Debug.LogError($"Brak pliku dla kategorii: {category}");
-                return;
-            }
-             
-            string content = ReadFromFile(saveFileName);
-            if (string.IsNullOrEmpty(content))
-            {
-                Debug.LogError($"Plik {saveFileName} jest pusty lub nie istnieje.");
+                Debug.LogError($"Cannot retrieve date from file: {fileName}");
                 return;
             }
             
-            PersistedEntityRegistry persistedEntityRegistry = JsonUtility.FromJson<PersistedEntityRegistry>(content);
-            if (persistedEntityRegistry == null)
+            foreach (var collection in persistedCollections)
             {
-                Debug.LogError($"Nie udało się sparsować danych z pliku {saveFileName}");
-                return;
+                entities
+                    .FirstOrDefault(saveableEntity => saveableEntity?.Id == collection.Id)
+                    ?.RestoreSaveableObjects(collection.ToDictionary());
             }
-
-            Dictionary<string, PersistedEntityCollection> saveData = persistedEntityRegistry.GetSaveData();
-            if (!saveData.TryGetValue(id, out PersistedEntityCollection entityCollection))
-            {
-                Debug.LogError($"Nie znaleziono ID: {id} w kategorii: {category}");
-                return;
-            }
-            
-           PersistedEntity persistedEntity = entityCollection.FindByType(type);
-           if (persistedEntity == null)
-           {
-               Debug.LogError($"Nie znaleziono wpisu dla typu: {type} w ID: {id}");
-               return;
-           }
-           
-            persistedEntity.SetSerializeContent(SerializeContent(value));
-            persistedEntityRegistry.SetSaveData(saveData);
-            
-            WriteToFile(saveFileName, SerializeContent(persistedEntityRegistry));
-        }
-
-        public void SaveCategory(SaveCategory category)
-        {
-            if (!saveCategories.TryGetValue(category, out var saveFileName))
-            {
-                Debug.LogError($"Brak pliku dla kategorii: {category}");
-                return;
-            }
-            
-            SaveableEntity[] entities = saveableEntities.Where(entity => entity.Category == category).ToArray();
-            Dictionary<string, List<PersistedEntity>> persistedEntityDictionary = new();
-            
-            foreach (SaveableEntity entity in entities)
-            {
-                Collect(entity, persistedEntityDictionary);
-            }
-            
-            WriteToFile(saveFileName, SerializeContent(new PersistedEntityRegistry(persistedEntityDictionary)));
-        }
-
-        
-        public void LoadAll()
-        {
-            foreach (var configEntry in saveCategories)
-            {
-                LoadContentFromFile(configEntry.Value, saveableEntities);
-            }
-        }
-
-        public void LoadCategory(SaveCategory category)
-        {
-            if (!saveCategories.TryGetValue(category, out var saveFileName))
-            {
-                Debug.LogError($"Brak pliku dla kategorii: {category}");
-                return;
-            }
-            SaveableEntity[] entities = saveableEntities.Where(entity => entity.Category == category).ToArray();
-            
-            LoadContentFromFile(saveFileName, entities);
-        }
-        
-        public void LoadSingleValueInCategory(SaveCategory category, string id, string type)
-        {
-            if (!saveCategories.TryGetValue(category, out var saveFileName))
-            {
-                Debug.LogError($"Brak pliku dla kategorii: {category}");
-                return;
-            }
-            
-            string content = ReadFromFile(saveFileName);
-            PersistedEntityRegistry saveProvider = JsonUtility.FromJson<PersistedEntityRegistry>(content);
-            Dictionary<string, PersistedEntityCollection> saveData = saveProvider.GetSaveData();
-
-            if (!saveData.TryGetValue(id, out PersistedEntityCollection entityCollection))
-            {
-                Debug.LogError(" ");
-                return;
-            }
-            
-            PersistedEntity persistedEntity = entityCollection.FindByType(type);
-            if (persistedEntity == null)
-            {
-                Debug.LogError(" ");
-                return;
-            }
-
-            SaveableEntity ent = saveableEntities.First(entity => entity.Id == id);
-            if (ent == null)
-            {
-                Debug.LogError(" ");
-                return;
-            }
-            
-            ent.RestoreSingleSaveableObject(persistedEntity);
-            Debug.Log("LoadSingleValueInCategory" + ent.Id);
-        }
-
-        private void LoadContentFromFile(string fileName, SaveableEntity[] entities)
-        {
-            string content = ReadFromFile(fileName);
-                
-            PersistedEntityRegistry saveProvider = JsonUtility.FromJson<PersistedEntityRegistry>(content);
-            Dictionary<string, PersistedEntityCollection> saveData = saveProvider.GetSaveData();
-                
-            foreach (SaveableEntity entity in entities)
-            {
-                if (saveData.TryGetValue(entity.Id, out PersistedEntityCollection value))
-                {
-                    entity.RestoreSaveableObjects(value.ToDictionary());
-                }
-            }
-        }
-        
-        private PersistedEntity CreatePersistedEntity(object value, string key)
-        {
-            return new PersistedEntity(JsonUtility.ToJson(value), key);
         }
         
         private string GetPathToFile(string fileName)

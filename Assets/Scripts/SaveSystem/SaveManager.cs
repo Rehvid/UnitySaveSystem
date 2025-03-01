@@ -1,16 +1,24 @@
 ﻿namespace RehvidGames.SaveSystem
 {
-    using System;
+    using Backup;
     using Config;
     using DataHandler;
     using Entity;
-    using NewSystem;
+    using Enums;
+    using Factory;
+    using FileSaver;
+    using Providers;
+    using Settings;
     using UnityEngine;
 
     public class SaveManager : MonoBehaviour
     {
+        [Header("Settings")]
         [SerializeField] private SaveConfig config;
+        [SerializeField] private DataHandlerType handlerType = DataHandlerType.File;
+        [SerializeField] private SerializerType serializerType = SerializerType.Json;
         [field: SerializeField] public bool UseEncryption { get; private set; }
+        
         
         private IDataHandler dataHandler;
 
@@ -19,16 +27,31 @@
             dataHandler = CreateDataHandler();
         }
 
-        [ContextMenu("SaveAllFiles")]
+        [ContextMenu("SaveAllData")]
         public void Save()
         {
             dataHandler = CreateDataHandler();
-            dataHandler.SaveAll();
+            dataHandler.SaveAllData();
         }
 
         private IDataHandler CreateDataHandler()
         {
-            return new FileDataHandler(config.GetConfigEntries(), FindSaveableEntities(), UseEncryption);
+            return DataHandlerFactory.Create(
+                handlerType,
+                new FileDataHandlerProvider(CreateFileSettings())
+            );
+        }
+
+        private BaseSettings CreateFileSettings()
+        {
+            return new BaseSettings(
+                config.GetConfigEntries(),
+                FindSaveableEntities(),
+                UseEncryption,
+                SerializerFactory.Create(serializerType),
+                new JsonFileSaver(SerializerFactory.Create(serializerType)),
+                new FileBackup()
+            );
         }
         
         private SaveableEntity[] FindSaveableEntities()
@@ -50,15 +73,17 @@
             dataHandler.LoadCategory(SaveCategory.Enemies);
         }
 
-        [ContextMenu("LoadCategory => OverwriteValueInCategory")]
+        [ContextMenu("LoadSingleCategory => Player Health ")]
         public void LoadSingleCategory()
         {
-            dataHandler = CreateDataHandler();
-            dataHandler.LoadSingleValueInCategory(
-                 SaveCategory.Player,
+            SaveRecord record = new SaveRecord(
+                SaveCategory.Player, 
                 "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
                 "RehvidGames.Entity.Health"
             );
+            dataHandler = CreateDataHandler();
+            
+            dataHandler.LoadSingleValueInCategory(record);
         }
 
         [ContextMenu("OverwriteValueInCategory => Player, ID, Health, HealthSystem")]
@@ -66,24 +91,26 @@
         {
             var obj = new HealthSystemData
             {
-                CurrentHealth = 669.1f,
-                MaxHealth = 888.2f
+                CurrentHealth = 6899.1f,
+                MaxHealth = 1232.2f
             };
 
-            dataHandler = CreateDataHandler();
-            dataHandler.OverwriteValueInCategory(
+            SaveRecord record = new SaveRecord(
                 SaveCategory.Player,
                 "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
                 "RehvidGames.Entity.Health",
                 obj
             );
+
+            dataHandler = CreateDataHandler();
+            dataHandler.UpdateRecord(record);
         }
 
-        [ContextMenu("SaveCategory")]
+        [ContextMenu("SaveCategory => Player")]
         public void SaveCat()
         {
             dataHandler = CreateDataHandler();
-            dataHandler.SaveCategory(SaveCategory.Enemies);
+            dataHandler.SaveCategoryData(SaveCategory.Player);
         }
     }
 }

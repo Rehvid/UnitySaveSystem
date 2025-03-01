@@ -6,23 +6,25 @@
     [System.Serializable]
     public class PersistedEntityCollection
     {
-        [SerializeField] private string id;
-        [SerializeField] private List<PersistedEntity> persistedEntities;
-
-        public string Id => id;
+        public string Id { get; }
+        public List<PersistedEntity> Entities { get; } = new();
         
-        public PersistedEntityCollection(string id, List<PersistedEntity> persistedEntities)
+        public PersistedEntityCollection(string id)
         {
-            this.id = id;
-            this.persistedEntities = persistedEntities;
+            Id = id;
         }
 
+        public void AddEntity(PersistedEntity entity)
+        {
+            Entities.Add(entity);
+        }
+        
         public Dictionary<string, object> ToDictionary()
         {
             Dictionary<string, object> saveData = new();
-            foreach (PersistedEntity entity in persistedEntities)
+            foreach (PersistedEntity entity in Entities)
             {
-                saveData[entity.Type] = entity.SerializedContent;
+                saveData[entity.EntityType] = entity.Data;
             }
             
             return saveData;
@@ -30,7 +32,7 @@
 
         public PersistedEntity FindByType(string type)
         {
-            return persistedEntities.Find(entity => entity.Type == type);
+            return Entities.Find(entity => entity.EntityType == type);
         }
     }
 }

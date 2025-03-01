@@ -399,8 +399,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f632c1a7c54e408cf27c16048272fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth: 123
-  maxHealth: 123123
+  currentHealth: 1
+  maxHealth: 100
 --- !u!1 &975472642
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,6 +446,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config: {fileID: 11400000, guid: b0d2333aaba7f6a4abb78f258bd6acc5, type: 2}
+  handlerType: 0
+  serializerType: 0
+  <UseEncryption>k__BackingField: 0
 --- !u!1 &1050032133
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,8 +589,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e3c809059d6409bb1b16365100c804a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  level: 123
-  experience: 123
+  level: 3
+  experience: 312
 --- !u!4 &1450018156
 Transform:
   m_ObjectHideFlags: 0
@@ -630,8 +633,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f632c1a7c54e408cf27c16048272fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth: 669.1
-  maxHealth: 888.2
+  currentHealth: 1
+  maxHealth: 100
 --- !u!1 &1617148311
 GameObject:
   m_ObjectHideFlags: 0
@@ -737,8 +740,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9f632c1a7c54e408cf27c16048272fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealth: 444
-  maxHealth: 444
+  currentHealth: 3123
+  maxHealth: 1232.2
 --- !u!114 &1822313823
 MonoBehaviour:
   m_ObjectHideFlags: 0

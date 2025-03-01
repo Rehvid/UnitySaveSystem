@@ -1,27 +1,17 @@
 ﻿namespace RehvidGames.PersistenceData
 {
     using System;
-    using UnityEngine;
 
     [Serializable]
     public class PersistedEntity
     {
-        [SerializeField] private string serializedContent;
-        [SerializeField] private string type;
+        public object Data { get; set; }
+        public string EntityType { get; set; }
         
-        public string SerializedContent => serializedContent;
-
-        public string Type => type;
-        
-        public PersistedEntity(string serializedContent, string type)
+        public PersistedEntity(object data, string type)
         {
-            this.serializedContent = serializedContent;
-            this.type = type;
-        }
-
-        public void SetSerializeContent(string content)
-        {
-            serializedContent = content;
+            Data = data;
+            EntityType = type;
         }
     }
 }

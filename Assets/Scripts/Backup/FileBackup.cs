@@ -2,30 +2,26 @@
 {
     using System;
     using System.IO;
+    using Exceptions;
     using UnityEngine;
 
-    public class FileBackup
+    public class FileBackup: IBackup
     {
         public void CreateBackup(string fileName)
         {
             try
             {
-                
-                // Przy zapisie
                 File.Copy(fileName, GetBackupPath(fileName), true);
             }
             catch (Exception e)
             {
                 Debug.LogError($"Failed to create backup. Exception: {e}");
-                throw; //TODO: Custom Exception
+                throw new BackupException("Failed to create backup.", e);
             }
-            
         }
 
         public bool RestoreBackup(string fullPath)
         {
-            // Jak nie znajdzie przy wczytywaniu wtedy jazda.
-            
             string backupFilePath = GetBackupPath(fullPath);
 
             if (!File.Exists(backupFilePath))

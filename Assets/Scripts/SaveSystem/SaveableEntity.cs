@@ -1,10 +1,9 @@
-﻿namespace RehvidGames.NewSystem
+﻿namespace RehvidGames.SaveSystem
 {
     using System;
     using System.Collections.Generic;
     using Config;
     using PersistenceData;
-    using SaveSystem;
     using UnityEngine;
 
     public class SaveableEntity: MonoBehaviour
@@ -18,8 +17,9 @@
         public Dictionary<string, object> CaptureSaveableObjects()
         {
             var state = new Dictionary<string, object>();
-
-            foreach (var saveable in GetComponents<ISaveable>())
+            var components = GetComponents<ISaveable>();
+           
+            foreach (var saveable in components)
             {
                 state[saveable.GetType().ToString()] = saveable.Save();
             }
@@ -29,29 +29,41 @@
 
         public void RestoreSaveableObjects(Dictionary<string, object> state)
         {
-            foreach (var saveable in GetComponents<ISaveable>())
-            {
-                string typeName = saveable.GetType().ToString();
-                if (state.TryGetValue(typeName, out object stateObject))
-                {
-                    saveable.Load(stateObject);
-                }
-            }
+           ProcessSaveableComponents((saveable, entityTypeName) =>
+           {
+               if (state.TryGetValue(entityTypeName, out object stateObject))
+               {
+                   saveable.Load(stateObject);
+               }
+
+               return false;
+           });
         }
 
         public void RestoreSingleSaveableObject(PersistedEntity entity)
         {
-            foreach (var saveable in GetComponents<ISaveable>())
-            {
+            ProcessSaveableComponents((saveable, entityTypeName) => {
+                if (entityTypeName != entity.EntityType) return false;
                 
-                if (saveable.GetType().ToString() == entity.Type)
+                saveable.Load(entity.Data);
+                return true;
+            });
+        }
+
+
+        private void ProcessSaveableComponents(Func<ISaveable, string, bool> callback)
+        {
+            var components = GetComponents<ISaveable>();
+            
+            foreach (var saveable in components)
+            {
+                string typeName = saveable.GetType().ToString();
+                
+                if (callback(saveable, typeName))
                 {
-                    Debug.Log(entity.SerializedContent);
-                    saveable.Load(entity.SerializedContent);
-                    break;
+                    break; 
                 }
             }
         }
-        
     }
 }
