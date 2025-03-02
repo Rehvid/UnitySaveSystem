@@ -2,55 +2,58 @@
 {
     using Backup;
     using Config;
-    using DataHandler;
+    using DataStorage;
     using Entity;
     using Enums;
     using Factory;
-    using FileSaver;
     using Providers;
+    using Record;
+    using Serializer;
     using Settings;
     using UnityEngine;
 
     public class SaveManager : MonoBehaviour
     {
         [Header("Settings")]
-        [SerializeField] private SaveConfig config;
-        [SerializeField] private DataHandlerType handlerType = DataHandlerType.File;
-        [SerializeField] private SerializerType serializerType = SerializerType.Json;
+        [SerializeField] private SaveConfiguration configuration;
+        [SerializeField] private StorageLocation storageLocation = StorageLocation.Local;
+        [SerializeField] private SerializationFormat serializationFormat = SerializationFormat.Json;
         [field: SerializeField] public bool UseEncryption { get; private set; }
         
         
-        private IDataHandler dataHandler;
+        private IDataStorage dataStorage;
 
         private void Awake()
         {
-            dataHandler = CreateDataHandler();
+            dataStorage = CreateDataHandler();
         }
 
         [ContextMenu("SaveAllData")]
         public void Save()
         {
-            dataHandler = CreateDataHandler();
-            dataHandler.SaveAllData();
+            dataStorage = CreateDataHandler();
+            dataStorage.SaveAll();
         }
 
-        private IDataHandler CreateDataHandler()
+        private IDataStorage CreateDataHandler()
         {
-            return DataHandlerFactory.Create(
-                handlerType,
-                new FileDataHandlerProvider(CreateFileSettings())
+            return DataStorageFactory.Create(
+                storageLocation,
+                StorageSettingsProvierFactory.Create(storageLocation, CreateFileSettings())
             );
         }
 
         private BaseSettings CreateFileSettings()
         {
+            ISerializer serializer = SerializerFactory.Create(serializationFormat);
+            
             return new BaseSettings(
-                config.GetConfigEntries(),
+                configuration.GetConfigEntries(),
                 FindSaveableEntities(),
                 UseEncryption,
-                SerializerFactory.Create(serializerType),
-                new JsonFileSaver(SerializerFactory.Create(serializerType)),
-                new FileBackup()
+                serializer,
+                StorageWriterFactory.Create(serializationFormat, serializer), 
+                BackupFactory.Create(storageLocation)
             );
         }
         
@@ -62,28 +65,28 @@
         [ContextMenu("LoadAllFiles")]
         public void LoadAllFiles()
         {
-            dataHandler = CreateDataHandler();
-            dataHandler.LoadAll();
+            dataStorage = CreateDataHandler();
+            dataStorage.LoadAll();
         }
 
         [ContextMenu("LoadCategory => ENEMIES")]
         public void LoadCategory()
         {
-            dataHandler = CreateDataHandler();
-            dataHandler.LoadCategory(SaveCategory.Enemies);
+            dataStorage = CreateDataHandler();
+            dataStorage.LoadCategory(SaveFileCategory.Enemies);
         }
 
         [ContextMenu("LoadSingleCategory => Player Health ")]
         public void LoadSingleCategory()
         {
             SaveRecord record = new SaveRecord(
-                SaveCategory.Player, 
+                SaveFileCategory.Player, 
                 "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
                 "RehvidGames.Entity.Health"
             );
-            dataHandler = CreateDataHandler();
+            dataStorage = CreateDataHandler();
             
-            dataHandler.LoadSingleValueInCategory(record);
+            dataStorage.LoadRecord(record);
         }
 
         [ContextMenu("OverwriteValueInCategory => Player, ID, Health, HealthSystem")]
@@ -96,21 +99,21 @@
             };
 
             SaveRecord record = new SaveRecord(
-                SaveCategory.Player,
+                SaveFileCategory.Player,
                 "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
                 "RehvidGames.Entity.Health",
                 obj
             );
 
-            dataHandler = CreateDataHandler();
-            dataHandler.UpdateRecord(record);
+            dataStorage = CreateDataHandler();
+            dataStorage.SaveRecord(record);
         }
 
         [ContextMenu("SaveCategory => Player")]
         public void SaveCat()
         {
-            dataHandler = CreateDataHandler();
-            dataHandler.SaveCategoryData(SaveCategory.Player);
+            dataStorage = CreateDataHandler();
+            dataStorage.SaveCategory(SaveFileCategory.Player);
         }
     }
 }

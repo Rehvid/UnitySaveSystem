@@ -3,13 +3,14 @@
     using System;
     using System.Collections.Generic;
     using Config;
-    using PersistenceData;
+    using Enums;
+    using SavedData;
     using UnityEngine;
 
     public class SaveableEntity: MonoBehaviour
     {
         [field: SerializeField] public string Id { get; private set; } = string.Empty;
-        [field: SerializeField] public SaveCategory Category { get; private set; }
+        [field: SerializeField] public SaveFileCategory FileCategory { get; private set; }
         
         [ContextMenu("Generate Id")]
         private void GenerateId() => Id = Guid.NewGuid().ToString();
@@ -40,7 +41,7 @@
            });
         }
 
-        public void RestoreSingleSaveableObject(PersistedEntity entity)
+        public void RestoreSingleSaveableObject(SavedEntity entity)
         {
             ProcessSaveableComponents((saveable, entityTypeName) => {
                 if (entityTypeName != entity.EntityType) return false;

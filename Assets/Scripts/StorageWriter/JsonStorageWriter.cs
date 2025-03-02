@@ -1,15 +1,15 @@
-﻿namespace RehvidGames.FileSaver
+﻿namespace RehvidGames.StorageWriter
 {
     using System.IO;
     using Encryption;
     using Serializer;
     using UnityEngine;
 
-    public class JsonFileSaver: IFileSaver
+    public class JsonStorageWriter: IStorageWriter
     {
         private readonly ISerializer serializer;
         
-        public JsonFileSaver(ISerializer serializer)
+        public JsonStorageWriter(ISerializer serializer)
         {
             this.serializer = serializer;
         }

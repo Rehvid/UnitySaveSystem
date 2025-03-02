@@ -1,7 +1,7 @@
 ﻿namespace RehvidGames.Enums
 {
-    public enum DataHandlerType
+    public enum StorageLocation
     {
-        File
+        Local
     }
 }

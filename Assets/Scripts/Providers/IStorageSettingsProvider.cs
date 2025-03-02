@@ -2,7 +2,7 @@
 {
     using Settings;
 
-    public interface IHandlerProvider
+    public interface IStorageSettingsProvider
     {
         BaseSettings GetSettings();
     }

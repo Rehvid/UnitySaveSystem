@@ -5,7 +5,7 @@
     using Exceptions;
     using UnityEngine;
 
-    public class FileBackup: IBackup
+    public class LocalBackup: IBackup
     {
         public void CreateBackup(string fileName)
         {

@@ -1,17 +1,17 @@
-﻿namespace RehvidGames
+﻿namespace RehvidGames.Record
 {
-    using Config;
+    using Enums;
 
     public class SaveRecord
     {
-        public readonly SaveCategory Category;
+        public readonly SaveFileCategory FileCategory;
         public readonly string Id;
         public readonly string EntityType;
         public readonly object Value;
 
-        public SaveRecord(SaveCategory category, string id, string type, object value = null)
+        public SaveRecord(SaveFileCategory fileCategory, string id, string type, object value = null)
         {
-            Category = category;
+            FileCategory = fileCategory;
             Id = id;
             EntityType = type;
             Value = value;

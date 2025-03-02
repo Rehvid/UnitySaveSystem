@@ -2,11 +2,11 @@
 {
     using Settings;
 
-    public class FileDataHandlerProvider: IHandlerProvider
+    public class LocalStorageSettingsProvider: IStorageSettingsProvider
     {
         private readonly BaseSettings settings;
         
-        public FileDataHandlerProvider(BaseSettings settings) 
+        public LocalStorageSettingsProvider(BaseSettings settings) 
         {
             this.settings = settings;
         }

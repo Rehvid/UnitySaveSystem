@@ -1,20 +1,19 @@
-﻿namespace RehvidGames.PersistenceData
+﻿namespace RehvidGames.SavedData
 {
     using System.Collections.Generic;
-    using UnityEngine;
 
     [System.Serializable]
-    public class PersistedEntityCollection
+    public class SavedEntityCollection
     {
         public string Id { get; }
-        public List<PersistedEntity> Entities { get; } = new();
+        public List<SavedEntity> Entities { get; } = new();
         
-        public PersistedEntityCollection(string id)
+        public SavedEntityCollection(string id)
         {
             Id = id;
         }
 
-        public void AddEntity(PersistedEntity entity)
+        public void AddEntity(SavedEntity entity)
         {
             Entities.Add(entity);
         }
@@ -22,7 +21,7 @@
         public Dictionary<string, object> ToDictionary()
         {
             Dictionary<string, object> saveData = new();
-            foreach (PersistedEntity entity in Entities)
+            foreach (SavedEntity entity in Entities)
             {
                 saveData[entity.EntityType] = entity.Data;
             }
@@ -30,7 +29,7 @@
             return saveData;
         }
 
-        public PersistedEntity FindByType(string type)
+        public SavedEntity FindByType(string type)
         {
             return Entities.Find(entity => entity.EntityType == type);
         }

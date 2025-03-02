@@ -1,6 +1,6 @@
 ﻿namespace RehvidGames.Enums
 {
-    public enum SerializerType
+    public enum SerializationFormat
     {
         Json
     }

@@ -1,22 +1,20 @@
-﻿namespace RehvidGames.DataHandler
+﻿namespace RehvidGames.DataStorage
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Backup;
-    using FileSaver;
-    using PersistenceData;
     using Providers;
-    using UnityEngine;
     using SaveSystem;
+    using SavedData;
+    using UnityEngine;
 
-    public class FileDataHandler: DataHandler
+    public class LocalStorageHandler: BaseDataStorage
     {
-        public FileDataHandler(IHandlerProvider provider) : base(provider) { }
+        public LocalStorageHandler(IStorageSettingsProvider provider) : base(provider) { }
         
         protected override void SaveData(string fileName, object data)
         {
-            bool saveResult = settings.FileSaver.Save(GetPathToFile(fileName), data, settings.UseEncryption);
+            bool saveResult = settings.StorageWriter.Save(GetPathToFile(fileName), data, settings.UseEncryption);
             
             if (saveResult)
             {
@@ -24,14 +22,14 @@
             }
         }
 
-        protected override List<PersistedEntityCollection> ReadPersistedCollections(string fileName)
+        protected override List<SavedEntityCollection> ReadPersistedCollections(string fileName)
         {
-            return settings.FileSaver.Load<List<PersistedEntityCollection>>(fileName, settings.UseEncryption);
+            return settings.StorageWriter.Load<List<SavedEntityCollection>>(fileName, settings.UseEncryption);
         }
         
         protected override void LoadData(string fileName, SaveableEntity[] entities)
         {
-            List<PersistedEntityCollection> persistedCollections = ReadPersistedCollections(fileName);
+            List<SavedEntityCollection> persistedCollections = ReadPersistedCollections(fileName);
             
             if (persistedCollections == null)
             {

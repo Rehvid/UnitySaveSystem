@@ -1,6 +1,6 @@
-﻿namespace RehvidGames.Config
+﻿namespace RehvidGames.Enums
 {
-    public enum SaveCategory
+    public enum SaveFileCategory
     {
         Settings,
         Player,

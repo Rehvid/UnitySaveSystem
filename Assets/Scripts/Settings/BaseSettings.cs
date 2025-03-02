@@ -2,28 +2,28 @@
 {
     using System.Collections.Generic;
     using Backup;
-    using Config;
-    using FileSaver;
+    using Enums;
     using SaveSystem;
     using Serializer;
+    using StorageWriter;
 
     public class BaseSettings
     {
-        public Dictionary<SaveCategory, string> SaveCategories { get; private set; }
+        public Dictionary<SaveFileCategory, string> SaveCategories { get; private set; }
         public SaveableEntity[] SaveableEntities { get; private set; }
         public bool UseEncryption { get; private set; }
         public ISerializer Serializer { get; private set; }
         
-        public IFileSaver FileSaver { get; private set; }
+        public IStorageWriter StorageWriter { get; private set; }
         
         public IBackup Backup { get; private set; }
         
         public BaseSettings(
-            Dictionary<SaveCategory, string> saveCategories,
+            Dictionary<SaveFileCategory, string> saveCategories,
             SaveableEntity[] saveableEntities,
             bool useEncryption,
             ISerializer serializer,
-            IFileSaver fileSaver,
+            IStorageWriter storageWriter,
             IBackup backup
         )
         {
@@ -31,7 +31,7 @@
             SaveableEntities = saveableEntities;
             UseEncryption = useEncryption;
             Serializer = serializer;
-            FileSaver = fileSaver;
+            StorageWriter = storageWriter;
             Backup = backup;
         }
     }

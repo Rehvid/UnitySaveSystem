@@ -1,22 +1,23 @@
-﻿namespace RehvidGames.DataHandler
+﻿namespace RehvidGames.DataStorage
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Config;
-    using PersistenceData;
+    using Enums;
     using Providers;
+    using Record;
     using SaveSystem;
     using Settings;
+    using SavedData;
     using UnityEngine;
 
-    public abstract class DataHandler: IDataHandler
+    public abstract class BaseDataStorage: IDataStorage
     {
         protected readonly BaseSettings settings;
-        protected readonly Dictionary<SaveCategory, string> saveCategories;
+        protected readonly Dictionary<SaveFileCategory, string> saveCategories;
         
         private readonly SaveableEntity[] saveableEntities;
         
-        protected DataHandler(IHandlerProvider provider)
+        protected BaseDataStorage(IStorageSettingsProvider provider)
         {
             settings = provider.GetSettings();
             
@@ -25,10 +26,10 @@
             
         }
         
-        public void SaveAllData()
+        public void SaveAll()
         {
             var persistedEntities = saveableEntities
-                .GroupBy(entity => entity.Category)
+                .GroupBy(entity => entity.FileCategory)
                 .ToDictionary(
                     group => group.Key, 
                     group => group.Select(BuildPersistedEntityCollection).ToList()
@@ -42,33 +43,33 @@
             }
         }
         
-        private PersistedEntityCollection BuildPersistedEntityCollection(SaveableEntity entity)
+        private SavedEntityCollection BuildPersistedEntityCollection(SaveableEntity entity)
         {
-            PersistedEntityCollection entityCollection = new PersistedEntityCollection(entity.Id);
+            SavedEntityCollection entityCollection = new SavedEntityCollection(entity.Id);
                 
             foreach (var saveableObject in entity.CaptureSaveableObjects())
             {
-                entityCollection.AddEntity(new PersistedEntity(saveableObject.Value, saveableObject.Key));
+                entityCollection.AddEntity(new SavedEntity(saveableObject.Value, saveableObject.Key));
             }
             
             return entityCollection;
         }
         
-        private bool TryGetFileNameFromCategory(SaveCategory category, out string fileName)
+        private bool TryGetFileNameFromCategory(SaveFileCategory fileCategory, out string fileName)
         {
-            if (settings.SaveCategories.TryGetValue(category, out fileName)) return true;
+            if (settings.SaveCategories.TryGetValue(fileCategory, out fileName)) return true;
             
-            Debug.LogError($"Not found file for category: {category}");
+            Debug.LogError($"Not found file for category: {fileCategory}");
             return false;
         }
         
         protected abstract void SaveData(string path, object data);
 
-        public void UpdateRecord(SaveRecord saveRecord)
+        public void SaveRecord(SaveRecord saveRecord)
         {
-            if (!TryGetFileNameFromCategory(saveRecord.Category, out string fileName)) return;
+            if (!TryGetFileNameFromCategory(saveRecord.FileCategory, out string fileName)) return;
            
-            List<PersistedEntityCollection> collections = ReadPersistedCollections(fileName);
+            List<SavedEntityCollection> collections = ReadPersistedCollections(fileName);
            
             if (collections == null)
             {
@@ -76,7 +77,7 @@
                 return;
             }
            
-            PersistedEntity entity = collections
+            SavedEntity entity = collections
                 .FirstOrDefault(collection => collection.Id == saveRecord.Id)
                 ?.FindByType(saveRecord.EntityType);
            
@@ -91,14 +92,14 @@
             SaveData(fileName, entity);
         }
 
-        protected abstract List<PersistedEntityCollection> ReadPersistedCollections(string fileName);
+        protected abstract List<SavedEntityCollection> ReadPersistedCollections(string fileName);
 
-        public void SaveCategoryData(SaveCategory category)
+        public void SaveCategory(SaveFileCategory fileCategory)
         {
-            if (!TryGetFileNameFromCategory(category, out var fileName)) return;
+            if (!TryGetFileNameFromCategory(fileCategory, out var fileName)) return;
             
-            List<PersistedEntityCollection> persistedEntityCollections = saveableEntities
-                .Where(entity => entity.Category == category)
+            List<SavedEntityCollection> persistedEntityCollections = saveableEntities
+                .Where(entity => entity.FileCategory == fileCategory)
                 .Select(BuildPersistedEntityCollection)
                 .ToList();
             
@@ -115,18 +116,18 @@
 
         protected abstract void LoadData(string path, SaveableEntity[] entities);
 
-        public void LoadCategory(SaveCategory category)
+        public void LoadCategory(SaveFileCategory fileCategory)
         {
-            if (TryGetFileNameFromCategory(category, out var saveFileName)) return;
+            if (TryGetFileNameFromCategory(fileCategory, out var saveFileName)) return;
             
-            LoadData(saveFileName, saveableEntities.Where(entity => entity.Category == category).ToArray());
+            LoadData(saveFileName, saveableEntities.Where(entity => entity.FileCategory == fileCategory).ToArray());
         }
 
-        public void LoadSingleValueInCategory(SaveRecord saveRecord)
+        public void LoadRecord(SaveRecord saveRecord)
         {
             if (!TryGetPersistedCollection(saveRecord, out var collection, out var saveFileName)) return;
             
-            PersistedEntity entity = collection.FindByType(saveRecord.EntityType);
+            SavedEntity entity = collection.FindByType(saveRecord.EntityType);
             if (entity == null)
             {
                 Debug.LogError($"Cannot retrieve data from file: {saveFileName}");
@@ -140,14 +141,14 @@
         
         private bool TryGetPersistedCollection(
             SaveRecord record, 
-            out PersistedEntityCollection collection,
+            out SavedEntityCollection collection,
             out string saveFileName
         )
         {
             collection = null;
             saveFileName = null;
             
-            if (!TryGetFileNameFromCategory(record.Category, out saveFileName)) return false;
+            if (!TryGetFileNameFromCategory(record.FileCategory, out saveFileName)) return false;
             
             var collections = ReadPersistedCollections(saveFileName);
             if (collections == null)

@@ -1,9 +1,11 @@
 ﻿namespace RehvidGames.Config
 {
+    using Enums;
+
     [System.Serializable]
-    public class SaveConfigEntry
+    public class SaveFileConfigEntry
     {
-        public SaveCategory Category;
+        public SaveFileCategory fileCategory;
         public string FileName;
     }
 }

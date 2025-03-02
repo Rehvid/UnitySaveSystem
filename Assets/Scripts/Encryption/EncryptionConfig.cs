@@ -1,4 +1,4 @@
-﻿namespace RehvidGames.Utilities
+﻿namespace RehvidGames.Encryption
 {
     using UnityEngine;
 
