@@ -7,6 +7,8 @@
 
     public class LocalBackup: IBackup
     {
+        private const string BackupExtension = ".backup";
+        
         public void CreateBackup(string fileName)
         {
             try
@@ -15,38 +17,62 @@
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to create backup. Exception: {e}");
                 throw new BackupException("Failed to create backup.", e);
             }
         }
 
-        public bool RestoreBackup(string fullPath)
+        public void DeleteBackup(string fileName)
         {
-            string backupFilePath = GetBackupPath(fullPath);
+            if (!IsBackupExists(fileName, out string backupFilePath)) return;
 
-            if (!File.Exists(backupFilePath))
+            TryToDeleteBackup(backupFilePath);
+        }
+
+        private void TryToDeleteBackup(string backupFilePath)
+        {
+            try
             {
-                Debug.LogWarning($"Rollback failed: no backup file found at path: {backupFilePath}");
-                return false;
+                File.Delete(backupFilePath);
             }
-
+            catch (Exception e )
+            {
+                throw new BackupException("Failed to delete backup.", e);
+            }
+        }
+        
+        public void RestoreBackup(string fullPath)
+        {
+            if (!IsBackupExists(fullPath, out string backupFilePath)) return;
+         
+            TryToRestoreBackup(fullPath, backupFilePath);
+        }
+        
+        private void TryToRestoreBackup(string fullPath, string backupFilePath)
+        {
             try
             {
                 File.Copy(fullPath, backupFilePath, true);
                 Debug.LogWarning("Had to roll back to backup file at: " + backupFilePath);
-                return true;
             }
             catch (Exception e)
             {
-                Debug.LogError("Error occured when trying to roll backup file at :" + backupFilePath + "\n" + e);
-                return false;
+                throw new BackupException("Error occured when trying to roll backup file at :" + backupFilePath + "\n", e);
             }
-            
         }
 
+        private bool IsBackupExists(string fullPath, out string backupFilePath)
+        {
+            backupFilePath = GetBackupPath(fullPath);
+
+            if (File.Exists(backupFilePath)) return true;
+            
+            Debug.LogWarning($"Rollback failed: no backup file found at path: {backupFilePath}");
+            return false;
+        }
+        
         private string GetBackupPath(string fullPath)
         {
-            return fullPath + ".backup";
+            return fullPath + BackupExtension;
         }
     }
 }

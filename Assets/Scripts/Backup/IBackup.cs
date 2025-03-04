@@ -3,6 +3,7 @@
     public interface IBackup
     {
         public void CreateBackup(string fileName);
-        public bool RestoreBackup(string fullPath);
+        public void RestoreBackup(string fullPath);
+        public void DeleteBackup(string fullPath);
     }
 }
