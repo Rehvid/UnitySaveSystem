@@ -1,12 +1,10 @@
 ﻿namespace RehvidGames.SaveSystem
 {
-    using Backup;
     using Config;
     using DataStorage;
     using Entity;
     using Enums;
     using Factory;
-    using Providers;
     using Record;
     using Serializer;
     using Settings;
@@ -20,39 +18,66 @@
         [SerializeField] private SerializationFormat serializationFormat = SerializationFormat.Json;
         [field: SerializeField] public bool UseEncryption { get; private set; }
         
+        private static SaveManager instance;
         
         private IDataStorage dataStorage;
 
+        public ISerializer Serializer { get; private set; }
+      
+        public static SaveManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = FindObjectOfType<SaveManager>();
+                    if (instance == null)
+                    {
+                        GameObject singletonObject = new GameObject("SaveManager");
+                        instance = singletonObject.AddComponent<SaveManager>();
+                    }
+                }
+                return instance;
+            }
+        }
+        
+        
         private void Awake()
         {
-            dataStorage = CreateDataHandler();
+            if (instance != null && instance != this)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+            
         }
 
-        [ContextMenu("SaveAllData")]
-        public void Save()
+        private void Start()
         {
-            dataStorage = CreateDataHandler();
-            dataStorage.SaveAll();
-        }
-
-        private IDataStorage CreateDataHandler()
-        {
-            return DataStorageFactory.Create(
-                storageLocation,
+            Serializer = SerializerFactory.Create(serializationFormat);
+            dataStorage = DataStorageFactory.Create(
+                storageLocation, 
                 StorageSettingsProvierFactory.Create(storageLocation, CreateFileSettings())
             );
         }
-
+        
+        public void SaveAll()
+        {
+            dataStorage.SaveAll();
+        }
+        
         private BaseSettings CreateFileSettings()
         {
-            ISerializer serializer = SerializerFactory.Create(serializationFormat);
-            
             return new BaseSettings(
                 configuration.GetConfigEntries(),
                 FindSaveableEntities(),
                 UseEncryption,
-                serializer,
-                StorageWriterFactory.Create(serializationFormat, serializer), 
+                Serializer,
+                StorageWriterFactory.Create(serializationFormat, Serializer), 
                 BackupFactory.Create(storageLocation)
             );
         }
@@ -61,59 +86,30 @@
         {
             return FindObjectsByType<SaveableEntity>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         }
-
-        [ContextMenu("LoadAllFiles")]
-        public void LoadAllFiles()
+        
+        public void LoadAll()
         {
-            dataStorage = CreateDataHandler();
             dataStorage.LoadAll();
         }
-
-        [ContextMenu("LoadCategory => ENEMIES")]
-        public void LoadCategory()
+        
+        public void LoadCategory(SaveFileCategory category)
         {
-            dataStorage = CreateDataHandler();
-            dataStorage.LoadCategory(SaveFileCategory.Enemies);
+            dataStorage.LoadCategory(category);
         }
-
-        [ContextMenu("LoadSingleCategory => Player Health ")]
-        public void LoadSingleCategory()
+        
+        public void LoadRecord(SaveRecord record)
         {
-            SaveRecord record = new SaveRecord(
-                SaveFileCategory.Player, 
-                "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
-                "RehvidGames.Entity.Health"
-            );
-            dataStorage = CreateDataHandler();
-            
             dataStorage.LoadRecord(record);
         }
-
-        [ContextMenu("OverwriteValueInCategory => Player, ID, Health, HealthSystem")]
-        public void SaveValuesInCategory()
+        
+        public void SaveRecord(SaveRecord record)
         {
-            var obj = new HealthSystemData
-            {
-                CurrentHealth = 6899.1f,
-                MaxHealth = 1232.2f
-            };
-
-            SaveRecord record = new SaveRecord(
-                SaveFileCategory.Player,
-                "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
-                "RehvidGames.Entity.Health",
-                obj
-            );
-
-            dataStorage = CreateDataHandler();
             dataStorage.SaveRecord(record);
         }
-
-        [ContextMenu("SaveCategory => Player")]
-        public void SaveCat()
+        
+        public void SaveCategory(SaveFileCategory category)
         {
-            dataStorage = CreateDataHandler();
-            dataStorage.SaveCategory(SaveFileCategory.Player);
+            dataStorage.SaveCategory(category);
         }
     }
 }

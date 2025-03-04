@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: SaveConfig
   m_EditorClassIdentifier: 
   configEntries:
-  - Category: 0
+  - fileCategory: 0
     FileName: Settings.json
-  - Category: 1
+  - fileCategory: 1
     FileName: PlayerSettings.json
-  - Category: 2
+  - fileCategory: 2
     FileName: Enemies.json

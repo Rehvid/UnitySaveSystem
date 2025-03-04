@@ -13,5 +13,6 @@
             Data = data;
             EntityType = type;
         }
+        
     }
 }

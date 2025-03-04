@@ -1,6 +1,7 @@
 ﻿namespace RehvidGames.SavedData
 {
     using System.Collections.Generic;
+    using Serializer;
 
     [System.Serializable]
     public class SavedEntityCollection
@@ -18,12 +19,12 @@
             Entities.Add(entity);
         }
         
-        public Dictionary<string, object> ToDictionary()
+        public Dictionary<string, object> ToDictionary(ISerializer serializer)
         {
             Dictionary<string, object> saveData = new();
             foreach (SavedEntity entity in Entities)
             {
-                saveData[entity.EntityType] = entity.Data;
+                saveData[entity.EntityType] = serializer.Deserialize<object>(entity.Data);
             }
             
             return saveData;

@@ -2,6 +2,7 @@
 {
     using System.Runtime.Serialization;
     using Newtonsoft.Json;
+    using UnityEngine;
 
     public sealed class JsonSerializer: ISerializer
     {
@@ -12,12 +13,7 @@
 
         public T Deserialize<T>(object obj)
         {
-            if (obj is string jsonString)
-            {
-                return JsonConvert.DeserializeObject<T>(jsonString);
-            }
-            
-            throw new SerializationException("Invalid input: expected a JSON string.");
+            return JsonConvert.DeserializeObject<T>(obj.ToString());
         }
     }
 }

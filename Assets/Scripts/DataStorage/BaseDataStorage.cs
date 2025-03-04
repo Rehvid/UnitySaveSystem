@@ -1,8 +1,10 @@
 ﻿namespace RehvidGames.DataStorage
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Enums;
+    using Newtonsoft.Json;
     using Providers;
     using Record;
     using SaveSystem;
@@ -23,7 +25,6 @@
             
             saveCategories = settings.SaveCategories;
             saveableEntities = settings.SaveableEntities;
-            
         }
         
         public void SaveAll()
@@ -39,7 +40,7 @@
             {
                 if (!TryGetFileNameFromCategory(category, out var fileName)) continue;
                 
-                SaveData(fileName, entities);
+                SaveData(GetFullPath(fileName), entities);
             }
         }
         
@@ -70,7 +71,7 @@
             if (!TryGetFileNameFromCategory(saveRecord.FileCategory, out string fileName)) return;
            
             List<SavedEntityCollection> collections = ReadPersistedCollections(fileName);
-           
+            
             if (collections == null)
             {
                 Debug.LogError($"Cannot retrieve data for entity type '{saveRecord.EntityType}' from file: {fileName}");
@@ -89,13 +90,13 @@
            
             entity.Data = saveRecord.Value;
             
-            SaveData(fileName, entity);
+            SaveData(GetFullPath(fileName), collections);
         }
 
         protected abstract List<SavedEntityCollection> ReadPersistedCollections(string fileName);
 
         public void SaveCategory(SaveFileCategory fileCategory)
-        {
+        { 
             if (!TryGetFileNameFromCategory(fileCategory, out var fileName)) return;
             
             List<SavedEntityCollection> persistedEntityCollections = saveableEntities
@@ -103,14 +104,14 @@
                 .Select(BuildPersistedEntityCollection)
                 .ToList();
             
-            SaveData(fileName, persistedEntityCollections);
+            SaveData(GetFullPath(fileName), persistedEntityCollections);
         }
 
         public void LoadAll()
         {
             foreach (var configEntry in settings.SaveCategories)
             {
-                LoadData(configEntry.Value, saveableEntities);
+                LoadData(GetFullPath(configEntry.Value), saveableEntities);
             }
         }
 
@@ -118,9 +119,9 @@
 
         public void LoadCategory(SaveFileCategory fileCategory)
         {
-            if (TryGetFileNameFromCategory(fileCategory, out var saveFileName)) return;
+            if (!TryGetFileNameFromCategory(fileCategory, out var saveFileName)) return;
             
-            LoadData(saveFileName, saveableEntities.Where(entity => entity.FileCategory == fileCategory).ToArray());
+            LoadData(GetFullPath(saveFileName), saveableEntities.Where(entity => entity.FileCategory == fileCategory).ToArray());
         }
 
         public void LoadRecord(SaveRecord saveRecord)
@@ -133,7 +134,7 @@
                 Debug.LogError($"Cannot retrieve data from file: {saveFileName}");
                 return;
             }
-
+            
             saveableEntities
                 .FirstOrDefault(saveableEntity => saveableEntity?.Id == collection.Id)
                 ?.RestoreSingleSaveableObject(entity);
@@ -150,7 +151,7 @@
             
             if (!TryGetFileNameFromCategory(record.FileCategory, out saveFileName)) return false;
             
-            var collections = ReadPersistedCollections(saveFileName);
+            var collections = ReadPersistedCollections(GetFullPath(saveFileName));
             if (collections == null)
             {
                 Debug.LogError($"Cannot retrieve data from file: {saveFileName}");
@@ -166,5 +167,7 @@
             
             return true;
         }
+
+        protected abstract string GetFullPath(string fileName);
     }
 }

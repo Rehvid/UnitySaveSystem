@@ -14,11 +14,11 @@
         
         protected override void SaveData(string fileName, object data)
         {
-            bool saveResult = settings.StorageWriter.Save(GetPathToFile(fileName), data, settings.UseEncryption);
+            bool saveResult = settings.StorageWriter.Save(fileName, data, settings.UseEncryption);
             
             if (saveResult)
             {
-                settings.Backup.CreateBackup(GetPathToFile(fileName));   
+                settings.Backup.CreateBackup(fileName);   
             }
         }
 
@@ -41,11 +41,11 @@
             {
                 entities
                     .FirstOrDefault(saveableEntity => saveableEntity?.Id == collection.Id)
-                    ?.RestoreSaveableObjects(collection.ToDictionary());
+                    ?.RestoreSaveableObjects(collection.ToDictionary(settings.Serializer));
             }
         }
         
-        private string GetPathToFile(string fileName)
+        protected override string GetFullPath(string fileName)
         {
             return Path.Combine(Application.persistentDataPath, fileName);
         }

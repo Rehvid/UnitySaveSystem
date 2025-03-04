@@ -2,10 +2,11 @@
 {
     using Enums;
 
+    [System.Serializable]
     public class SaveRecord
     {
-        public readonly SaveFileCategory FileCategory;
-        public readonly string Id;
+        public SaveFileCategory FileCategory;
+        public string Id;
         public readonly string EntityType;
         public readonly object Value;
 
