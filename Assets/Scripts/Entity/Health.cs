@@ -1,17 +1,16 @@
 ﻿namespace RehvidGames.Entity
 {
-    using Newtonsoft.Json;
     using SaveSystem;
     using UnityEngine;
 
     public class Health: MonoBehaviour, ISaveable
     {
-        [SerializeField] private float currentHealth = 1;
+        [SerializeField] private float currentHealth = 25;
         [SerializeField] private float maxHealth = 100;
         
         public object Save()
         {
-            return new HealthSystemData()
+            return new HealthSaveData()
             {
                 CurrentHealth = currentHealth, 
                 MaxHealth = maxHealth, 
@@ -19,18 +18,23 @@
         }
 
         public void Load(object state)
-        {
-            var systemData = JsonConvert.DeserializeObject<HealthSystemData>(state.ToString());
+        { 
+            HealthSaveData saveData = SaveManager.Instance.Serializer.Deserialize<HealthSaveData>(state);
             
-            Debug.Log(systemData.CurrentHealth);
-            currentHealth = systemData.CurrentHealth;
-            maxHealth = systemData.MaxHealth;
+            if (saveData == null)
+            {
+                Debug.LogWarning("Loading health system failed.");
+                return;
+            }
+            
+            currentHealth = saveData.CurrentHealth;
+            maxHealth = saveData.MaxHealth;
         }
     }
     
     
     [System.Serializable]
-    public struct HealthSystemData
+    public class HealthSaveData
     {
         public float CurrentHealth;
         public float MaxHealth;

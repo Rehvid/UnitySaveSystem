@@ -10,20 +10,26 @@
         
         public object Save()
         {
-            return new LevelSystemData() {Level = level, Experience = experience};
+            return new LevelSaveData() {Level = level, Experience = experience};
         }
 
         public void Load(object state)
         {
-          LevelSystemData data = JsonUtility.FromJson<LevelSystemData>(state.ToString());
+          LevelSaveData saveData = SaveManager.Instance.Serializer.Deserialize<LevelSaveData>(state);
+            
+          if (saveData == null)
+          {
+              Debug.LogWarning("Loading health system failed.");
+              return;
+          }
           
-          level = data.Level;
-          experience = data.Experience;
+          level = saveData.Level;
+          experience = saveData.Experience;
         }
     }
 
     [System.Serializable]
-    public struct LevelSystemData
+    public class LevelSaveData
     {
         public int Level;
         public int Experience;
