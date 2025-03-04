@@ -19,21 +19,16 @@
 
         public void Load(object state)
         {
-            AudioSaveData audioSaveData = SaveManager.Instance.Serializer.Deserialize<AudioSaveData>(state);
+            AudioSaveData saveData = AudioSaveData.Load(state);
+            if (saveData == null) return;
             
-            if (audioSaveData == null)
-            {
-                Debug.LogWarning("Loading Audio Save Data failed.");
-                return;
-            }
-            
-            volume = audioSaveData.Volume;
-            maxVolume = audioSaveData.MaxVolume;
+            volume = saveData.Volume;
+            maxVolume = saveData.MaxVolume;
         }
     }
 
     [System.Serializable]
-    public class AudioSaveData
+    public class AudioSaveData: BaseSaveData<AudioSaveData>
     {
         public float Volume;
         public float MaxVolume;

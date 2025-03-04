@@ -1,6 +1,7 @@
 ﻿namespace RehvidGames.Entity
 {
     using SaveSystem;
+    using UnityEditor.Overlays;
     using UnityEngine;
 
     public class Level: MonoBehaviour, ISaveable
@@ -14,22 +15,17 @@
         }
 
         public void Load(object state)
-        {
-          LevelSaveData saveData = SaveManager.Instance.Serializer.Deserialize<LevelSaveData>(state);
-            
-          if (saveData == null)
-          {
-              Debug.LogWarning("Loading health system failed.");
-              return;
-          }
+        { 
+            LevelSaveData saveData = LevelSaveData.Load(state);
+            if (saveData == null) return;
           
-          level = saveData.Level;
-          experience = saveData.Experience;
+            level = saveData.Level;
+            experience = saveData.Experience;
         }
     }
 
     [System.Serializable]
-    public class LevelSaveData
+    public class LevelSaveData: BaseSaveData<LevelSaveData>
     {
         public int Level;
         public int Experience;

@@ -20,20 +20,15 @@
 
         public void Load(object state)
         {
-            ManaSaveData saveData = SaveManager.Instance.Serializer.Deserialize<ManaSaveData>(state);
-            
-            if (saveData == null)
-            {
-                Debug.LogWarning("Loading Mana system failed.");
-                return;
-            }
+            ManaSaveData saveData = ManaSaveData.Load(state);
+            if (saveData == null) return;
             
             current = saveData.CurrentMana;
             max = saveData.MaxMana;
         }
     }
     
-    public class ManaSaveData
+    public class ManaSaveData: BaseSaveData<ManaSaveData>
     {
         public float CurrentMana;
         public float MaxMana;

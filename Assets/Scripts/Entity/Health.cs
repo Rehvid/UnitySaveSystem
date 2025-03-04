@@ -19,13 +19,8 @@
 
         public void Load(object state)
         { 
-            HealthSaveData saveData = SaveManager.Instance.Serializer.Deserialize<HealthSaveData>(state);
-            
-            if (saveData == null)
-            {
-                Debug.LogWarning("Loading health system failed.");
-                return;
-            }
+            HealthSaveData saveData = HealthSaveData.Load(state);
+            if (saveData == null) return;
             
             currentHealth = saveData.CurrentHealth;
             maxHealth = saveData.MaxHealth;
@@ -34,7 +29,7 @@
     
     
     [System.Serializable]
-    public class HealthSaveData
+    public class HealthSaveData: BaseSaveData<HealthSaveData>
     {
         public float CurrentHealth;
         public float MaxHealth;

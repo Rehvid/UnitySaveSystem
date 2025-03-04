@@ -1,6 +1,7 @@
 ﻿namespace RehvidGames.Entity
 {
     using SaveSystem;
+    using UnityEditor.Overlays;
     using UnityEngine;
 
     public class Graphic : MonoBehaviour, ISaveable
@@ -18,18 +19,14 @@
 
         public void Load(object state)
         {
-            GraphicSaveData saveData = SaveManager.Instance.Serializer.Deserialize<GraphicSaveData>(state);
+            GraphicSaveData saveData = GraphicSaveData.Load(state);
+            if (saveData == null) return;
             
-            if (saveData == null)
-            {
-                Debug.LogWarning("Loading health system failed.");
-                return;
-            }
             useFullScreen = saveData.UseFullScreen;
         }
     }
 
-    public class GraphicSaveData
+    public class GraphicSaveData: BaseSaveData<GraphicSaveData>
     {
         public bool UseFullScreen;
     }
