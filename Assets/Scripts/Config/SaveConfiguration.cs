@@ -20,9 +20,9 @@
                 }
             }
             
+            
+            
             return result;
         }
-        
-        public SaveFileConfigEntry GetConfigEntry(SaveFileCategory fileCategory) => configEntries.Find(config => config.fileCategory == fileCategory);
     }
 }

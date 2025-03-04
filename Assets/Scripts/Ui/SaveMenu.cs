@@ -45,6 +45,11 @@
             saveManager.LoadRecord(CreateSaveRecord());
         }
 
+        public void DeleteSelectedCategory()
+        {
+            saveManager.DeleteCategory(category);
+        }
+
         private SaveRecord CreateSaveRecord()
         {
             object data = null;

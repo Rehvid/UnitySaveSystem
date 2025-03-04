@@ -1,8 +1,10 @@
 ﻿namespace RehvidGames.DataStorage
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Enums;
     using Providers;
     using SaveSystem;
     using SavedData;
@@ -18,7 +20,32 @@
             
             if (saveResult)
             {
-                settings.Backup.CreateBackup(fileName);   
+                CreateBackup(fileName);
+            }
+        }
+
+        protected override void CreateBackup(string fileName)
+        {
+            try
+            {
+                settings.Backup.CreateBackup(fileName);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception.Message);
+            }
+        }
+
+        protected override void DeleteFile(string path)
+        {
+            try
+            {
+                File.Delete(path);
+                settings.Backup.DeleteBackup(path);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception.Message);
             }
         }
 

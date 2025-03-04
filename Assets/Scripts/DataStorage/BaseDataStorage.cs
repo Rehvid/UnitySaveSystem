@@ -1,10 +1,8 @@
 ﻿namespace RehvidGames.DataStorage
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using Enums;
-    using Newtonsoft.Json;
     using Providers;
     using Record;
     using SaveSystem;
@@ -93,6 +91,8 @@
             SaveData(GetFullPath(fileName), collections);
         }
 
+        protected abstract void CreateBackup(string fileName);
+
         protected abstract List<SavedEntityCollection> ReadPersistedCollections(string fileName);
 
         public void SaveCategory(SaveFileCategory fileCategory)
@@ -140,6 +140,7 @@
                 ?.RestoreSingleSaveableObject(entity);
         }
         
+        
         private bool TryGetPersistedCollection(
             SaveRecord record, 
             out SavedEntityCollection collection,
@@ -169,5 +170,22 @@
         }
 
         protected abstract string GetFullPath(string fileName);
+
+        public void DeleteAll()
+        {
+            foreach (var (category, filename) in settings.SaveCategories)
+            {
+                DeleteFile(GetFullPath(filename));
+            }
+        }
+
+        public void DeleteCategory(SaveFileCategory fileCategory)
+        {
+            if (!TryGetFileNameFromCategory(fileCategory, out var fileName)) return;
+            
+            DeleteFile(GetFullPath(fileName));
+        }
+        
+        protected abstract void DeleteFile(string path);
     }
 }

@@ -111,5 +111,15 @@
         {
             dataStorage.SaveCategory(category);
         }
+
+        public void DeleteAll()
+        {
+            dataStorage.DeleteAll();
+        }
+        
+        public void DeleteCategory(SaveFileCategory category)
+        {
+            dataStorage.DeleteCategory(category);
+        }
     }
 }
