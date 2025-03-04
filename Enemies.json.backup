@@ -1,0 +1,21 @@
+[
+  {
+    "Id": "b7522b82-d996-4889-a535-93e540ac1835",
+    "Entities": [
+      {
+        "Data": {
+          "CurrentHealth": 50.0,
+          "MaxHealth": 100.0
+        },
+        "EntityType": "RehvidGames.Entity.Health"
+      },
+      {
+        "Data": {
+          "CurrentMana": 25.0,
+          "MaxMana": 100.0
+        },
+        "EntityType": "RehvidGames.Entity.Mana"
+      }
+    ]
+  }
+]

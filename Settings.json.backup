@@ -1,0 +1,20 @@
+[
+  {
+    "Id": "9723499b-cd74-42cb-91d1-0443f1f0a58c",
+    "Entities": [
+      {
+        "Data": {
+          "Volume": 50.0,
+          "MaxVolume": 100.0
+        },
+        "EntityType": "RehvidGames.Entity.Audio"
+      },
+      {
+        "Data": {
+          "UseFullScreen": true
+        },
+        "EntityType": "RehvidGames.Entity.Graphic"
+      }
+    ]
+  }
+]

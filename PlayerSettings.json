@@ -1,0 +1,21 @@
+[
+  {
+    "Id": "bdcc17d6-ccaf-4996-a0a9-a02f35708659",
+    "Entities": [
+      {
+        "Data": {
+          "Level": 1,
+          "Experience": 25
+        },
+        "EntityType": "RehvidGames.Entity.Level"
+      },
+      {
+        "Data": {
+          "CurrentHealth": 25.0,
+          "MaxHealth": 100.0
+        },
+        "EntityType": "RehvidGames.Entity.Health"
+      }
+    ]
+  }
+]
