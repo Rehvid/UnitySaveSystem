@@ -36,6 +36,12 @@
 
         public T Load<T>(string path, bool useEncryption)
         {
+            if (!File.Exists(path))
+            {
+                Debug.LogError("Can't load data from json file");
+                return default(T);
+            }
+
             var jsonData = File.ReadAllText(path);
 
             if (string.IsNullOrEmpty(jsonData))

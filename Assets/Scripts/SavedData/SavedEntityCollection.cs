@@ -19,7 +19,7 @@
             Entities.Add(entity);
         }
         
-        public Dictionary<string, object> ToDictionary(ISerializer serializer)
+        public Dictionary<string, object> ToDeserializedDictionary(ISerializer serializer)
         {
             Dictionary<string, object> saveData = new();
             foreach (SavedEntity entity in Entities)

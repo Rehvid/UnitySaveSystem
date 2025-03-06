@@ -2,8 +2,8 @@
 {
     public interface IBackup
     {
-        public void CreateBackup(string fileName);
-        public void RestoreBackup(string fullPath);
-        public void DeleteBackup(string fullPath);
+        public void CreateBackup(string filePath);
+        public void RestoreBackup(string filePath);
+        public void DeleteBackup(string filePath);
     }
 }

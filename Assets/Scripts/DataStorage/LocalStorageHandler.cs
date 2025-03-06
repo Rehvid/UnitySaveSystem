@@ -14,21 +14,24 @@
     {
         public LocalStorageHandler(IStorageSettingsProvider provider) : base(provider) { }
         
-        protected override void SaveData(string fileName, object data)
+        protected override void SaveData(string filePath, object data)
         {
-            bool saveResult = settings.StorageWriter.Save(fileName, data, settings.UseEncryption);
+            bool saveResult = settings.StorageWriter.Save(filePath, data, settings.UseEncryption);
             
             if (saveResult)
             {
-                CreateBackup(fileName);
+                CreateBackup(filePath);
+            } else
+            {
+                Debug.LogError($"Failed to save data to file: {filePath}");
             }
         }
 
-        protected override void CreateBackup(string fileName)
+        protected override void CreateBackup(string filePath)
         {
             try
             {
-                settings.Backup.CreateBackup(fileName);
+                settings.Backup.CreateBackup(filePath);
             }
             catch (Exception exception)
             {
@@ -36,12 +39,12 @@
             }
         }
 
-        protected override void DeleteFile(string path)
+        protected override void DeleteFile(string filePath)
         {
             try
             {
-                File.Delete(path);
-                settings.Backup.DeleteBackup(path);
+                File.Delete(filePath);
+                settings.Backup.DeleteBackup(filePath);
             }
             catch (Exception exception)
             {
@@ -49,30 +52,43 @@
             }
         }
 
-        protected override List<SavedEntityCollection> ReadPersistedCollections(string fileName)
+        protected override List<SavedEntityCollection> ReadPersistedCollections(string filePath)
         {
-            return settings.StorageWriter.Load<List<SavedEntityCollection>>(fileName, settings.UseEncryption);
+            List<SavedEntityCollection> collections = settings.StorageWriter.Load<List<SavedEntityCollection>>(filePath, settings.UseEncryption);
+
+            if (collections != null) return collections;
+            
+            Debug.LogError($"Cannot retrieve date from file: {filePath}");
+            return TryRestoreFromBackup(filePath);
         }
         
-        protected override void LoadData(string fileName, SaveableEntity[] entities)
+        protected override void LoadData(string filePath, SaveableEntity[] entities)
         {
-            List<SavedEntityCollection> persistedCollections = ReadPersistedCollections(fileName);
+            List<SavedEntityCollection> persistedCollections = ReadPersistedCollections(filePath);
             
-            if (persistedCollections == null)
+            if (persistedCollections == null || persistedCollections.Count <= 0)
             {
-                Debug.LogError($"Cannot retrieve date from file: {fileName}");
+                Debug.LogError($"Cannot retrieve date from file: {filePath}");
                 return;
             }
             
             foreach (var collection in persistedCollections)
             {
-                entities
-                    .FirstOrDefault(saveableEntity => saveableEntity?.Id == collection.Id)
-                    ?.RestoreSaveableObjects(collection.ToDictionary(settings.Serializer));
+                RestoreSaveableObjects(entities, collection);
+            }
+        }
+
+        private void RestoreSaveableObjects(SaveableEntity[] entities, SavedEntityCollection collection)
+        {
+            SaveableEntity saveableEntity = FindPersistedEntityInCollection(entities, collection);
+            
+            if (saveableEntity != null)
+            {
+                saveableEntity.RestoreSaveableObjects(collection.ToDeserializedDictionary(settings.Serializer));
             }
         }
         
-        protected override string GetFullPath(string fileName)
+        protected override string GetFilePath(string fileName)
         {
             return Path.Combine(Application.persistentDataPath, fileName);
         }

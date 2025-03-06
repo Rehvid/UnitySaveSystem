@@ -56,7 +56,7 @@
             }
             catch (Exception e)
             {
-                Debug.LogError($"Błąd podczas deszyfrowania: {e.Message}");
+                Debug.LogError($"Error during encryption: {e.Message}");
                 return null;
             }
         }

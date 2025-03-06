@@ -12,7 +12,6 @@
         public void LoadCategory(SaveFileCategory fileCategory);
         public void LoadRecord(SaveRecord saveRecord);
         public void DeleteCategory(SaveFileCategory fileCategory);
-
         public void DeleteAll();
     }
 }
