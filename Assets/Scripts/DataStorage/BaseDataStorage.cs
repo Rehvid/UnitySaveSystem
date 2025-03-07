@@ -27,7 +27,7 @@
         }
         
         protected abstract void CreateBackup(string filePath);
-        protected abstract List<SavedEntityCollection> ReadPersistedCollections(string filePath);
+        protected abstract List<SavedEntityCollection> ReadPersistedCollections(string filePath, bool isBackupRead);
         protected abstract void LoadData(string filePath, SaveableEntity[] entities);
         protected abstract void SaveData(string filePath, object data);
         protected abstract string GetFilePath(string fileName);
@@ -79,8 +79,7 @@
         {
             if (!TryGetFileNameFromCategory(saveRecord.FileCategory, out string fileName)) return;
            
-            List<SavedEntityCollection> collections = ReadPersistedCollections(fileName);
-            
+            List<SavedEntityCollection> collections = ReadPersistedCollections(GetFilePath(fileName), false);
             if (collections == null)
             {
                 Debug.LogError($"Cannot retrieve data for entity type '{saveRecord.EntityType}' from file: {fileName}");
@@ -166,7 +165,7 @@
             
             if (!TryGetFileNameFromCategory(record.FileCategory, out fileName)) return false;
             
-            var collections = ReadPersistedCollections(GetFilePath(fileName));
+            var collections = ReadPersistedCollections(GetFilePath(fileName), false);
             
             if (collections == null)
             {
@@ -205,7 +204,7 @@
             {
                 settings.Backup.RestoreBackup(filePath);
                 
-                var backUpPersistedCollections = ReadPersistedCollections(filePath);
+                var backUpPersistedCollections = ReadPersistedCollections(filePath, true);
 
                 if (backUpPersistedCollections != null) return backUpPersistedCollections;
                 

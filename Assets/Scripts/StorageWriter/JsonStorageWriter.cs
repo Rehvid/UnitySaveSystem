@@ -35,11 +35,11 @@
         }
 
         public T Load<T>(string path, bool useEncryption)
-        {
+        { 
             if (!File.Exists(path))
             {
                 Debug.LogError("Can't load data from json file");
-                return default(T);
+                return default;
             }
 
             var jsonData = File.ReadAllText(path);
@@ -54,7 +54,6 @@
             {
                 jsonData = SaveEncryption.Decrypt(jsonData);
             }
-            
             
             return serializer.Deserialize<T>(jsonData);
         }
