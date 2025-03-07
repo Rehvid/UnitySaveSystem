@@ -52,7 +52,7 @@
             }
         }
 
-        protected override List<SavedEntityCollection> ReadPersistedCollections(string filePath, bool isBackupRead)
+        protected override List<SavedEntityCollection> ReadPersistedCollections(string filePath)
         {
             List<SavedEntityCollection> collections = settings.StorageWriter.Load<List<SavedEntityCollection>>(filePath, settings.UseEncryption);
             
@@ -60,12 +60,12 @@
             
             Debug.LogError($"Cannot retrieve date from file: {filePath}");
 
-            return isBackupRead ? null : TryRestoreFromBackup(filePath);
+            return RestoreFromBackup(filePath);
         }
         
         protected override void LoadData(string filePath, SaveableEntity[] entities)
         {
-            List<SavedEntityCollection> persistedCollections = ReadPersistedCollections(filePath, false);
+            List<SavedEntityCollection> persistedCollections = ReadPersistedCollections(filePath);
             
             if (persistedCollections == null || persistedCollections.Count <= 0)
             {

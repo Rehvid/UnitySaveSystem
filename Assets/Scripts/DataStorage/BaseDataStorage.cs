@@ -17,6 +17,7 @@
         protected readonly Dictionary<SaveFileCategory, string> fileCategoryToFileName;
         
         private readonly SaveableEntity[] saveableEntities;
+        private bool hasAttemptToRestoreFromBackup;
         
         protected BaseDataStorage(IStorageSettingsProvider provider)
         {
@@ -27,7 +28,7 @@
         }
         
         protected abstract void CreateBackup(string filePath);
-        protected abstract List<SavedEntityCollection> ReadPersistedCollections(string filePath, bool isBackupRead);
+        protected abstract List<SavedEntityCollection> ReadPersistedCollections(string filePath);
         protected abstract void LoadData(string filePath, SaveableEntity[] entities);
         protected abstract void SaveData(string filePath, object data);
         protected abstract string GetFilePath(string fileName);
@@ -79,7 +80,7 @@
         {
             if (!TryGetFileNameFromCategory(saveRecord.FileCategory, out string fileName)) return;
            
-            List<SavedEntityCollection> collections = ReadPersistedCollections(GetFilePath(fileName), false);
+            List<SavedEntityCollection> collections = ReadPersistedCollections(GetFilePath(fileName));
             if (collections == null)
             {
                 Debug.LogError($"Cannot retrieve data for entity type '{saveRecord.EntityType}' from file: {fileName}");
@@ -165,7 +166,7 @@
             
             if (!TryGetFileNameFromCategory(record.FileCategory, out fileName)) return false;
             
-            var collections = ReadPersistedCollections(GetFilePath(fileName), false);
+            var collections = ReadPersistedCollections(GetFilePath(fileName));
             
             if (collections == null)
             {
@@ -198,13 +199,21 @@
             DeleteFile(GetFilePath(fileName));
         }
 
-        protected List<SavedEntityCollection> TryRestoreFromBackup(string filePath)
+        protected List<SavedEntityCollection> RestoreFromBackup(string filePath)
+        {
+            if (hasAttemptToRestoreFromBackup) return null;
+            
+            hasAttemptToRestoreFromBackup = true;
+            return TryRestoreFromBackup(filePath);
+        }
+        
+        private List<SavedEntityCollection> TryRestoreFromBackup(string filePath)
         {
             try
             {
                 settings.Backup.RestoreBackup(filePath);
                 
-                var backUpPersistedCollections = ReadPersistedCollections(filePath, true);
+                var backUpPersistedCollections = ReadPersistedCollections(filePath);
 
                 if (backUpPersistedCollections != null) return backUpPersistedCollections;
                 

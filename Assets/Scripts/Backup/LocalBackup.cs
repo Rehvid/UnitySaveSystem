@@ -42,7 +42,10 @@
         
         public void RestoreBackup(string filePath)
         {
-            if (!TryGetExistedBackup(filePath, out string backupFilePath)) return;
+            if (!TryGetExistedBackup(filePath, out string backupFilePath))
+            {
+                throw new BackupException("Cannot restore backup"); 
+            }
          
             TryToRestoreBackup(filePath, backupFilePath);
         }
@@ -71,8 +74,8 @@
             backupFilePath = GetBackupPath(filePath);
 
             if (File.Exists(backupFilePath)) return true;
-            
-            Debug.LogWarning($"Rollback failed: no backup file found at path: {backupFilePath}");
+             
+            Debug.LogWarning($"No backup file found at path: {backupFilePath}");
             return false;
         }
         
